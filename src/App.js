@@ -52,6 +52,7 @@ class App extends Component {
                 isSync: true,
                 original: originalArr
             });
+
         }
         else {
             var arr = this.state.original.slice();
@@ -60,7 +61,13 @@ class App extends Component {
                 isSync: false
             });
         }
-        this.playAll();
+
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (this.state.isSync !== prevState.isSync) {
+            this.playAll();
+        }
     }
 
 
