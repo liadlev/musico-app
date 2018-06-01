@@ -90,7 +90,7 @@ p {
   border-radius: 10px;  
   bottom: 2vh;
   box-shadow: 2px 2px 5px black;
-  height: 115px;
+  height: 10%;
   left: 5%;
   position: fixed;
   width: 90%;
@@ -286,42 +286,49 @@ p {
 }
 
 .button__pause {
-  background-color: black;
-  border-radius: 4px;
-  bottom: -10px;
-  cursor: pointer;
-  filter: drop-shadow(5px 5px 5px #e65100);
-  left: 50%;
-  position: absolute;
-  height: 50px; 
-  width: 22px;
-}
-
-.button__pause::after {
-  background-color: black;
-  border-radius: 4px;
-  content: "";
-  width: 22px;
-  height: 50px;
-  position: absolute;
-  left: 27px;
-}
-
-.button__pause:hover {
-  filter: none;
-}
-
-.button__play {
-  border-top: 25px solid transparent;
-  border-left: 50px solid black;
-  border-bottom: 25px solid transparent;
-  bottom: -10px;
+  border-top: 15px solid black;
+  border-left: 15px solid black;
+  border-right: 15px solid black;
+  border-bottom: 15px solid black;
+  top: 1px;
   cursor: pointer;
   filter: drop-shadow(5px 5px 5px #e65100);
   height: 0;
   position: absolute;
   left: 50%;
   width: 0;
+}
+
+
+.button__pause:hover {
+  filter: none;
+}
+
+.button__play {
+  border-top: 15px solid transparent;
+  border-left: 30px solid black;
+  border-bottom: 15px solid transparent;
+  top: 1px;
+  cursor: pointer;
+  filter: drop-shadow(5px 5px 5px #e65100);
+  height: 0;
+  position: absolute;
+  left: 50%;
+  width: 0;
+}
+.line
+{
+  position: absolute;
+  font-size: 1em;
+  border-radius: 3px;
+  text-decoration: none;
+  outline: none;
+  left:45%;
+  top:3px;
+  cursor: pointer;
+  #background: #fc561e;
+  border-radius: 50px;
+  color: #fff;
 }
 
 .button__play:hover {
@@ -356,6 +363,8 @@ p {
   filter: none;
 }
 
+
+
 .orange-button {
   display: inline-block;
   font-size: 1em;
@@ -375,11 +384,21 @@ p {
   float: left;
 }
 
+.remove{
+  display: inline-block;
+  cursor:pointer;
+  border:none;
+  width:50px;
+  height:50px;
+  float: right;
+}
+
 .player {
   overflow: hidden;
   display: block;
   border: 1px solid #ccc;
   padding: 10px;
+  width:50%;
   margin-bottom: 20px;
   text-align: left;
 }
@@ -407,6 +426,11 @@ p {
 .track-user {
   margin: 0;
   color: #505050;
+}
+
+.bpm
+{
+  display: none;
 }
 
   .progress-container {

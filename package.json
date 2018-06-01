@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "axios": "^0.17.0",
+    "bpm-detective": "^2.0.3",
     "express": "^4.16.2",
     "moment": "^2.21.0",
     "react": "^15.3.2",

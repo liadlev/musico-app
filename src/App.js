@@ -1,59 +1,84 @@
 import React, {Component} from 'react';
 import {Route} from 'react-router-dom';
-import moment from 'moment';
 
 import SongsList from './components/SongsList';
-import SongDetails from './components/SongDetails';
 
 class App extends Component {
+
 
     constructor(props) {
         super(props);
 
+
         this.state = {
-            currentSongChanged: false,
-            currentSongDuration: 0,
             currentSongId: 'fmaFNKY-01',
-            playingsongs: [],
-            currentSongNewPlay: true,
-            currentSongPlaying: false,
             isPlayAll: false,
-            isPlayAllChild: false,
-            currentSongTime: 0,
-            keepSongPlaybackSetting: false,
-            selectedSongId: 'fmaFNKY-01',
-            songs: this.props.songs,
+            isSync: false,
+            songs: [],
+            original: [],
+            playlist: this.props.songs,
+            selectValue: ""
         };
 
         // Bindings
-        this.toggleCurrentSong = this.toggleCurrentSong.bind(this);
         this.playAll = this.playAll.bind(this);
-        /*
-            this.playAll = this.playAll.bind(this);
-        */
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.sync = this.sync.bind(this);
+        this.remove = this.remove.bind(this);
     }
 
 
+    sync() {
+        if (!this.state.isSync) {
+            var arr = this.state.songs.slice();
+            var originalArr = this.state.songs.slice();
+            arr.sort(function (a, b) {
+                var durA = document.getElementById("currentAudio" + a.id).duration;
+                var durB = document.getElementById("currentAudio" + b.id).duration;
+                if (durA < durB) {
+                    return -1;
+                }
+                if (durA > durB) {
+                    return 1;
+                }
+                return 0;
+            });
+            for (let i = 0; i < arr.length; i++) {
+                document.getElementById("span" + this.state.songs[i].id).innerHTML = document.getElementById("span" + arr[arr.length - 1].id).textContent;
+            }
+            this.setState({
+                songs: arr,
+                isSync: true,
+                original: originalArr
+            });
+        }
+        else {
+            var arr = this.state.original.slice();
+            this.setState({
+                songs: arr,
+                isSync: false
+            });
+        }
+        this.playAll();
+    }
 
 
-
-    // flag component change to display details of specified song id
     playAll() {
-        if(this.state.isPlayAll) {
-            for (let i = 0; i < this.props.songs.length; i++) {
-                document.getElementById("currentAudio" + this.props.songs[i].id).loop = false;
-                document.getElementById("currentAudio" + this.props.songs[i].id).pause();
-                document.getElementById("currentAudio" + this.props.songs[i].id).currentTime = 0;
+        if (this.state.isPlayAll) {
+            for (let i = 0; i < this.state.songs.length; i++) {
+                document.getElementById("currentAudio" + this.state.songs[i].id).loop = false;
+                document.getElementById("currentAudio" + this.state.songs[i].id).pause();
+                document.getElementById("currentAudio" + this.state.songs[i].id).currentTime = 0;
             }
             this.setState({
                 isPlayAll: false
             });
         }
-        else
-        {
-            for (let i = 0; i < this.props.songs.length; i++) {
-                document.getElementById("currentAudio" + this.props.songs[i].id).loop = true;
-                document.getElementById("currentAudio" + this.props.songs[i].id).play();
+        else {
+            for (let i = 0; i < this.state.songs.length; i++) {
+                document.getElementById("currentAudio" + this.state.songs[i].id).loop = true;
+                document.getElementById("currentAudio" + this.state.songs[i].id).play();
             }
             this.setState({
                 isPlayAll: true
@@ -61,109 +86,102 @@ class App extends Component {
         }
     }
 
-/*            for (let i = 0; i < this.props.songs.length; i++) {
-                document.getElementById("currentAudio" + this.props.songs[i].id).play();
-            }
-            this.setState({
-                isPlayAll: true
-            })*/
 
 
+    handleChange(event)
+    {
+        this.setState({selectValue: event.target.value});
+    }
 
-    // toggle play/pause audio settings
-    toggleCurrentSong() {
-        if (this.state.currentSongPlaying) {
-            document.getElementById("currentAudio" + this.state.currentSongId).pause();
+    remove(id)
+    {
+        var tempSongs = this.state.songs.slice();
+        var tempPlaylist = this.state.playlist.slice();
+        var elementPos = tempSongs.map(function (x) {
+            return x.id;
+        }).indexOf(id);
+        var obj = tempSongs[elementPos];
+        tempPlaylist.push(obj);
+        tempSongs.splice(elementPos, 1);
+        this.setState({
+            playlist: tempPlaylist,
+            songs: tempSongs
+        });
+    }
+
+    handleSubmit(event) {
+        if(event.target.value !== "") {
+            var tempPlaylist = this.state.playlist.slice();
+            var tempSongs = this.state.songs.slice();
+            var elementPos = tempPlaylist.map(function (x) {
+                return x.id;
+            }).indexOf(this.state.selectValue);
+            var obj = tempPlaylist[elementPos];
+            tempSongs.push(obj);
+            tempPlaylist.splice(elementPos, 1);
             this.setState({
-                currentSongPlaying: false,
-            });
-        } else {
-            document.getElementById("currentAudio" + this.state.currentSongId).play();
-            this.setState({
-                currentSongPlaying: true,
+                playlist: tempPlaylist,
+                songs: tempSongs
             });
         }
+        event.preventDefault();
     }
 
     render() {
-
-        // get data of current song, including current index position in song list array
-        let currentSong;
-        for (let i = 0; i < this.props.songs.length; i++) {
-            if (this.props.songs[i].id === this.state.currentSongId) {
-                currentSong = this.props.songs[i];
-                currentSong.index = i;
-            }
-        }
-
-        // get data of next song in song list
-        let nextSong;
-        if (currentSong.index === this.state.songs.length - 1) {
-            nextSong = this.state.songs[0];
-        } else {
-            nextSong = this.state.songs[currentSong.index + 1];
-        }
-
-        // get data of previous song in song list
-        let previousSong;
-        if (currentSong.index === 0) {
-            previousSong = this.props.songs[this.props.songs.length - 1];
-        } else {
-            previousSong = this.props.songs[currentSong.index - 1];
-        }
-
         // toggle between play/pause button
         let playBtn = "button__play";
         if (this.state.isPlayAll) {
             playBtn = "button__pause";
         }
 
-        // keep playback settings
-        let keepPlayBackSetting = true;
+        let playlistList = this.state.playlist;
+        let optionItems = playlistList.map((song) =>
+            <option value={song.id}>{song.title}</option>
+        );
 
 
         return (
             <div className="App">
                 <div className="title-bar">
-                    <img className="logo" src="/Cloud.png" alt=""/>
-                    <h1> SoundNuage Music Library </h1>
+                    <h1> Musico - Looper </h1>
                 </div>
                 <div className="container">
                     <div className="row">
                         <div className="playlist">
                             <div className="playlist__title">
-                                <h1> Featured Playlist: Funky Beats </h1>
-                            </div>
-                            <div className="playlist__content">
-                                {this.props.songs.map((song) => {
-                                    return (
-                                        <Route exact path="/"
-                                               render={() => <SongsList  playAll={this.state.isPlayAll} songs={song}
-                                                                        currentSongId={this.state.currentSongId}/>}/>
-                                    );
-                                })}
+                                <h1> Featured Playlist List: </h1>
+                                <form onSubmit={this.handleSubmit}>
+                                    <label>
+                                        <select onChange={this.handleChange}>
+                                            <option value="">choose a song</option>
+                                            {optionItems}
+                                        </select>
+                                    </label>
+                                    <input type="submit" value="Add to Playlist"/>
+                                </form>
                             </div>
                         </div>
-                        {/*<Route exact path="/" render={()=><SongsList songs={ this.state.songs } btnHandler={ this.toggleCurrentSong } linkHandler={ this.showSongDetails } currentSongId={ this.state.currentSongId } />}/>
-              <Route path="/:songId" render={(props)=><SongDetails song={ this.state.songs.find((song)=>song.id === props.match.params.songId) } playSong={ this.selectCurrentSong }  downloadSong={ this.incrementDownloadCount } starSong={ this.starSong }/>}/>*/}
+                        <div className="playlist__content">
+                            {this.state.songs.map((song) => {
+                                return (
+                                    <Route exact path="/"
+                                           render={() => <SongsList
+                                               isSync={this.state.isSync}
+                                               removeFunc = {this.remove}
+                                               songId={song.id}
+                                               playAll={this.state.isPlayAll} songs={song}
+                                           />}/>
+                                );
+                            })}
+                        </div>
                     </div>
-                    <div className="row">
-                        <div className="footer">
-                            <div className="media-player">
-                                {/*<audio id="currentAudio" src={ "/audio/" + currentSong.source } onDurationChange={ this.setCurrentSongDuration } onTimeUpdate={ this.setCurrentSongTime }></audio>*/}
-                                {/*                <div className="media-player__text">
-                  <span className="media-player__text--left"> Now playing: { currentSong.title } </span>
-                  <span className="media-player__text--right"> { moment( this.state.currentSongTime * 1000 ).format('m:ss') } / { moment( this.state.currentSongDuration * 1000 ).format('m:ss') } </span>
-                </div> */}
-                                <div className="media-player__controls">
-                                    <div className="button__previous" onClick={() => {
-                                        this.selectCurrentSong(previousSong.id, keepPlayBackSetting)
-                                    }}></div>
-                                    <div className={playBtn} onClick={this.playAll}> </div>
-                                    <div className="button__next" onClick={() => {
-                                        this.selectCurrentSong(nextSong.id, keepPlayBackSetting)
-                                    }}></div>
-                                </div>
+                </div>
+                <div className="row">
+                    <div className="footer">
+                        <div className="media-player">
+                            <div className="media-player__controls">
+                                <div className={playBtn} onClick={this.playAll}></div>
+                                <div id="sync" className="line" onClick={this.sync}>sync</div>
                             </div>
                         </div>
                     </div>

@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Link} from 'react-router-dom';
+import detect from 'bpm-detective';
 
 
 class SongsList extends Component {
@@ -7,15 +7,20 @@ class SongsList extends Component {
     constructor(props) {
         super(props);
 
-        this.isisis = this.props.playAll;
-
         this.state = {
             isPlay: false,
-            SongId: this.props.songs.id,
-            isPlayAll: this.props.playAll
+            isPlayAll: this.props.playAll,
+            sync: this.props.isSync,
+            SongId: this.props.songId,
+            songs: this.props.song
         };
 
         this.toggleSong = this.toggleSong.bind(this);
+        this.bpmCalculator = this.bpmCalculator.bind(this);
+        this.componentWillReceiveProps = this.componentWillReceiveProps.bind(this);
+        this.removeSong = this.removeSong.bind(this);
+
+
     }
 
     componentWillReceiveProps(nextProps) {
@@ -25,6 +30,43 @@ class SongsList extends Component {
                 isPlay: nextProps.playAll
             });
         }
+        if (nextProps.isSync !== this.props.isSync) {
+            this.setState({
+                sync: nextProps.isSync
+            });
+        }
+    }
+
+    bpmCalculator(songSrc) {
+        const AudioContext = window.AudioContext;
+        const locSrc = '/audio/';
+        const src = locSrc + songSrc;
+        let context = new AudioContext();
+        let tempBpm = "";
+
+        // Fetch some audio file
+        fetch(src)
+        // Get response as ArrayBuffer
+            .then(response => response.arrayBuffer())
+            .then(buffer => {
+                // Decode audio into an AudioBuffer
+                return new Promise((resolve, reject) => {
+                    context.decodeAudioData(buffer, resolve, reject);
+                });
+            })
+            // Run detection
+            .then(buffer => {
+                    try {
+                        tempBpm  = detect(buffer);
+                        if(!this.state.sync)
+                            document.getElementById("span" + this.props.songs.id).innerHTML = tempBpm;
+
+
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+            );
     }
 
 
@@ -42,36 +84,15 @@ class SongsList extends Component {
         }
     }
 
+    removeSong(){
+        this.props.removeFunc(this.props.songs.id)
+    }
+
     render() {
-        /*        // console.log(this.props);
-                let songListJSX = this.props.songs.map((song)=>{
-                    let classList = "";
-                    if(this.props.currentSongId === song.id){
-                        classList += " song-card__playing"
-                    }*/
-
-
         let playBtn = '\u25BA';
         if (this.state.isPlay) {
             playBtn = '\u258C\u258C';
         }
-
-
-        /*        if(this.state.isPlayAll)
-                {
-                    document.getElementById("currentAudio" + this.state.SongId).play();
-                    this.setState({
-                        isPlay: true
-                    });
-                }
-                else
-                {
-                    document.getElementById("currentAudio" + this.state.SongId).stop();
-                    this.setState({
-                        isPlay: false
-                    });
-                }*/
-
         return (
 
             <div className="player">
@@ -81,17 +102,18 @@ class SongsList extends Component {
                         this.toggleSong(this.props.songs.id)
                     }
                 }}> {playBtn}  </span>
-                <div
-
-                    className="timer"
+                <img className="remove" src="/remove.jpg" alt="" onClick=
+                    {
+                        this.removeSong
+                    }
                 />
                 <div className="track-info">
                     <h2 className="track-title">{this.props.songs.title}</h2>
                     <h3 className="track-user">{this.props.songs.artist}</h3>
+                    <h3>bpm: <span id={"span" + this.props.songs.id}>{this.bpmCalculator(this.props.songs.source)}</span></h3>
+
                 </div>
-                <div
-                    className="progress-container"
-                />
+
 
             </div>
 
@@ -99,29 +121,7 @@ class SongsList extends Component {
     }
 
 
-    /*               <div className={ "song-card" + classList } key={ song.id }>
-                       <audio id={"currentAudio" + song.id} src={ "/audio/" + song.source } onDurationChange={ this.setCurrentSongDurati   on } onTimeUpdate={ this.setCurrentSongTime }></audio>
-                       <span className="play-btn" onClick={ ()=>{ this.props.btnHandler(song.id) } }> &#9658; </span>
-                       <img className="song-card__img" src={ song.albumCover } alt="" />
-                       <div className="song-card__title">
-                           <Link to={"/" + song.id} onClick={ ()=>{ this.props.linkHandler(song.id) } }>
-                               <h2> { song.title } </h2>
-                           </Link>
-                       </div>
-                   </div>
-               );
-           });*/
 
-    /*        return (
-                <div className="playlist">
-                    <div className="playlist__title">
-                        <h1> Featured Playlist: Funky Beats </h1>
-                    </div>
-                    <div className="playlist__content">
-                        { songListJSX }
-                    </div>
-                </div>
-            )*/
 
 }
 
